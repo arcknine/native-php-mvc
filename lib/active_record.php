@@ -2,9 +2,9 @@
 class ActiveRecord
 {
   protected $conn;
-  var $data, $table, $s, $time_now;
+  var $data, $table, $s, $time_now, $statement, $sql;
 
-  public function __construct($data)
+  public function __construct($data = [])
   {
     global $connection;
     $this->conn =& $connection;
@@ -29,9 +29,31 @@ class ActiveRecord
     }
     $values = implode(', ', $values);
 
-    $sql = "INSERT INTO {$this->table} ({$keys}) VALUES ({$values})";
+    $this->sql = "INSERT INTO {$this->table} ({$keys}) VALUES ({$values})";
 
-    return $this->execute_query($sql);
+    $this->execute_query($sql);
+    $this->statement->execute();
+    $this->statement->close();
+
+    return true;
+  }
+
+  public function all()
+  {
+    $this->sql = "SELECT * FROM {$this->table}";
+    // $result = $this->conn->query($this->sql);
+    // $data = [];
+    // while($row = $result->fetch_assoc())
+    // {
+    //   $data[] = $row;
+    // }
+
+    return new Extention($this);
+  }
+
+  public function where($args = [])
+  {
+
   }
 
   private function getDbTableName()
@@ -39,9 +61,9 @@ class ActiveRecord
     return pluralize(strtolower(get_class($this)));
   }
 
-  private function execute_query($sql)
+  private function execute_query()
   {
-    if ($stmt = $this->conn->prepare($sql))
+    if ($this->statement = $this->conn->prepare($this->sql))
     {
       $i = 0;
       $bind_names = [$this->s];
@@ -53,11 +75,8 @@ class ActiveRecord
         $i += 1;
       }
 
-      call_user_func_array(array($stmt, 'bind_param'), $bind_names);
-
-      $stmt->execute();
-      $stmt->close();
-
+      // dd($sql);
+      call_user_func_array(array($this->statement, 'bind_param'), $bind_names);
       return true;
     }
   }

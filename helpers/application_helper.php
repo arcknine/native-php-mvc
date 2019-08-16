@@ -9,8 +9,8 @@ function dd($arr)
 
 function view($path, $data,  $layout = 'application')
 {
-  $template = include('views/' . $path . '.html.php');
-  include('views/layout/'.$layout.'.html.php');
+  $template = include_once('views/' . $path . '.html.php');
+  include_once('views/layout/'.$layout.'.html.php');
 }
 
 function pluralize($str)
